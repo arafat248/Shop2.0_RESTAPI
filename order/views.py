@@ -1,14 +1,17 @@
 from django.shortcuts import render
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyModelMixin
-from .serializer import cart_serial, cartitem_serial, addcartitem_serial, up_da_serial
-from .models import Cart, CartItem
-from rest_framework.permissions import IsAdminUser
+from .serializer import cart_serial, cartitem_serial, addcartitem_serial, up_da_serial, OrderSerial, CreateOrderSerial
+from .models import Cart, CartItem, OrderItem, Order
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 # Create your views here.
 class cart_view(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     #queryset = Cart.objects.all()
     serializer_class = cart_serial
     permission_classes = [IsAdminUser]
+
+    def perform_create(self, serializer):
+        serializer.save(users=self.request.user)
     
     def get_queryset(self):
         return Cart.objects.filter(users = self.request.user)
@@ -27,3 +30,18 @@ class cart_item_view(ModelViewSet):
     
     def get_queryset(self):
         return CartItem.objects.filter(cart_id=self.kwargs['cart_pk'])
+
+class OrderViewSet(ModelViewSet):
+    serializer_class = OrderSerial
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method=='POST':
+            return CreateOrderSerial
+        return OrderSerial
+    
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
+
