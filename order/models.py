@@ -38,7 +38,7 @@ class Order(models.Model):
     id = models.UUIDField(primary_key= True, default=uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=50, choices = STATUS_CHOICES, default= PENDING)
-    total_price = models.DecimalField(max_digits=5, decimal_places=2)
+    total_price = models.DecimalField(max_digits=15, decimal_places=2)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
